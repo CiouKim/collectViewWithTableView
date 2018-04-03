@@ -13,17 +13,18 @@
 @interface ColumnCollectView : UIView </*CollectionViewCellDelegate,*/ UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UICollectionViewDragDelegate, UICollectionViewDropDelegate> {
     UIButton *filterBtn;
     FilterView *filterView;
-    
 }
 
 @property (strong, nonatomic) UICollectionView *collectionView;
 @property (strong, nonatomic) UICollectionViewFlowLayout *flowLayout;
 @property (strong, nonatomic) NSMutableArray *tableData;
-//被選中的顯示欄位的資料
+//Data be selected
 @property (strong, nonatomic) NSMutableArray *tableShowData;
-//collectView是否能使用拖動
+//collectView enabled drag collectViewCell
 @property (nonatomic) BOOL isDragInteractionEnabled;
-
+//Scroll enabled
 @property (nonatomic) BOOL isScrollEnabled;
+//isShowFilterBtn
+@property (nonatomic) BOOL isFilterBtnEnabled;
 
 @end

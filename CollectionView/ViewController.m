@@ -25,8 +25,7 @@
     NSMutableArray *section6 = [NSMutableArray arrayWithObjects:@"FFFFFFF", @"f", @"54", @"55", @"56", @"57", @"58", @"59", @"2", @"3", @"4", @"5", @"6", @"7", @"8", @"9", @"2", @"3", @"4", @"5", @"6", @"7", @"8", @"9", nil];
     NSMutableArray *section7 = [NSMutableArray arrayWithObjects:@"GG", @"g", @"55", @"55", @"56", @"57", @"58", @"59", @"2", @"3", @"4", @"5", @"6", @"7", @"8", @"9", @"2", @"3", @"4", @"5", @"6", @"7", @"8", @"9", nil];
     NSMutableArray *section8 = [NSMutableArray arrayWithObjects:@"HH", @"h", @"54", @"55", @"56", @"57", @"58", @"59", @"2", @"3", @"4", @"5", @"6", @"7", @"8", @"9", @"2", @"3", @"4", @"5", @"6", @"7", @"8", @"9", nil];
-    NSMutableArray *section10 = [NSMutableArray arrayWithObjects:@"SSSSSSSSS", @"h", @"AA", nil];
-    NSMutableArray *section11 = [NSMutableArray arrayWithObjects:@"1234", @"11", @"22", nil];
+
 
     float cellLWidthSize = 200;
     float cellRWidthSize = 200;
@@ -34,8 +33,6 @@
     NSMutableArray *tempLArr = [NSMutableArray arrayWithObjects: sectiona, sectionb, sectionc, nil];
     NSMutableArray *tempRArr = [NSMutableArray arrayWithObjects:section1, section2, section3, section4, section5, section6, section7, section8, nil];
     
-//    NSMutableArray *tempLArr = [NSMutableArray arrayWithObjects: section10, nil];
-//    NSMutableArray *tempRArr = [NSMutableArray arrayWithObjects:section10,section11, nil];
     
     if (lCView == nil) {
         cellLWidthSize = cellLWidthSize *tempLArr.count;
@@ -59,6 +56,9 @@
     
     lCView.tableData = tempLArr;
     rCView.tableData = tempRArr;
+    
+    lCView.isFilterBtnEnabled = NO;
+    rCView.isFilterBtnEnabled = YES;
     
     
     [self.view addSubview:lCView];

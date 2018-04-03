@@ -19,6 +19,7 @@
 }
 
 @property (strong, nonatomic) UILabel *label;
-@property (nonatomic, weak) NSMutableArray *tbDataArray;//ＣollectViewCell 的所有資料
+//ＣollectViewCell 的所有資料
+@property (nonatomic, weak) NSMutableArray *tbDataArray;
 
 @end

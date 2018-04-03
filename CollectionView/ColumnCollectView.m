@@ -1,4 +1,4 @@
-    //
+//
 //  ColumnCollectView.m
 //  CollectionView
 //
@@ -55,6 +55,12 @@ static NSString * const cellIdentifier = @"cellIdentifier";
     [self addSubview:filterView];
 }
 
+-(void)setIsFilterBtnEnabled:(BOOL)isFilterBtnEnabled {
+    _isScrollEnabled = isFilterBtnEnabled;
+    filterBtn.hidden = !isFilterBtnEnabled;
+    
+}
+
 - (void)setIsDragInteractionEnabled:(BOOL)isDragInteractionEnabled {
     _collectionView.dragInteractionEnabled = isDragInteractionEnabled;
 }
@@ -96,7 +102,7 @@ static NSString * const cellIdentifier = @"cellIdentifier";
 
 #pragma mark - UICollectionViewDelegateFlowLayout
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-        return CGSizeMake(cellWidthSize, 450); //set item size
+    return CGSizeMake(cellWidthSize, 450); //set item size
 }
 
 - (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section {
