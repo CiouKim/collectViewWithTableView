@@ -15,10 +15,10 @@
 //@end
 
 @interface CollectionViewCell : UICollectionViewCell <UITableViewDelegate, UITableViewDataSource/*, CollectionViewCellDelegate*/> {
-        UITableView *tTableView;
+    UITableView *tTableView;
+    UILabel *titleLabel;
+//    CGPoint location;
 }
-
-@property (strong, nonatomic) UILabel *label;
 //ＣollectViewCell 的所有資料
 @property (nonatomic, weak) NSMutableArray *tbDataArray;
 

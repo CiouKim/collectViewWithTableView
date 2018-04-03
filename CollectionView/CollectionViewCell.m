@@ -7,36 +7,34 @@
 
 #import "CollectionViewCell.h"
 
-
 @implementation CollectionViewCell
-
 //@synthesize delegate;
+#define labelHeight 100
+#define TABLE_HEIGHT 549
 
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
+    self.backgroundColor = [UIColor whiteColor];
+    
     if (self) {
-        CGFloat cellWidth = self.bounds.size.width;
-        CGFloat cellHeight = self.bounds.size.height;
-        
-        _label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, cellWidth, 100)];
-        _label.textAlignment = NSTextAlignmentCenter;
-        _label.numberOfLines = 0;
-        _label.backgroundColor = [UIColor colorWithRed:115.0/255 green:171.0/255 blue:255.0/255 alpha:1.0];
-        
-        tTableView = [[UITableView alloc]init];
+        tTableView = [[UITableView alloc] init];
         tTableView.showsVerticalScrollIndicator = NO;
         tTableView.delegate = self;
         tTableView.dataSource = self;
-        tTableView.frame = CGRectMake(0, 105, cellWidth, cellHeight - 105);
         tTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
         tTableView.backgroundColor = [UIColor clearColor];
-
-        [self.contentView addSubview:_label];
+        
         [self addSubview:tTableView];
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(tableScrollToTop:) name:@"TableScrollToTop" object:nil];
     }
     return self;
+}
+
+- (void)drawRect:(CGRect)rect {
+    CGFloat cellHeight = self.bounds.size.height;
+//        tTableView.frame = CGRectMake(0, 0, self.frame.size.width , cellHeight - (labelHeight+5));
+    tTableView.frame = CGRectMake(0, 0, [self widthOfString:_tbDataArray[0]], cellHeight - (labelHeight+5));
 }
 
 - (void)setTbDataArray:(NSMutableArray *)tbDataArray {
@@ -46,12 +44,37 @@
 
 #pragma mark - UITableViewDataSource
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return [_tbDataArray  count] - 1;
+    return [_tbDataArray count] - 1;
+}
+
+//set section height
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    return labelHeight;
+}
+
+//set section titleLabel attribute
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    if (titleLabel == nil) {
+        titleLabel = [[UILabel alloc] init];
+    }
+    
+    titleLabel.text = _tbDataArray[0];
+    titleLabel.textAlignment = NSTextAlignmentCenter;
+    titleLabel.numberOfLines = 0;
+    titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    titleLabel.backgroundColor = [UIColor colorWithRed:115.0/255 green:171.0/255 blue:255.0/255 alpha:1.0];
+    [titleLabel sizeToFit];
+    
+    return titleLabel;
 }
 
 #pragma -UITableViewDelegate
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     return 40;
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return 1;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -91,15 +114,23 @@
     }
 }
 
-- (void) scrollViewDidScroll:(UIScrollView *)scrollView {
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     CGPoint location = CGPointMake(scrollView.contentOffset.x, scrollView.contentOffset.y);
     NSDictionary *userInfo = [NSDictionary dictionaryWithObject:[NSValue valueWithCGPoint:location] forKey:@"CGPoint"];
     [[NSNotificationCenter defaultCenter] postNotificationName:@"TableScrollToTop" object:self userInfo:userInfo];
 }
 
 - (void)tableScrollToTop:(NSNotification *)notification {
-    NSValue *v = [notification.userInfo valueForKey:@"CGPoint"];
-    tTableView.contentOffset = CGPointMake(v.CGPointValue.x ,v.CGPointValue.y);
+    if ([notification.userInfo valueForKey:@"CGPoint"] != nil) {
+        NSValue *v = [notification.userInfo valueForKey:@"CGPoint"];
+        tTableView.contentOffset = CGPointMake(v.CGPointValue.x ,v.CGPointValue.y);
+    }
+    [self setNeedsDisplay];//protect layout fail.
+}
+
+- (CGFloat)widthOfString:(NSString *)string {
+    NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:[UIFont systemFontOfSize:15], NSFontAttributeName, nil];
+    return [[[NSAttributedString alloc] initWithString:string attributes:attributes] size].width +65;
 }
 
 @end

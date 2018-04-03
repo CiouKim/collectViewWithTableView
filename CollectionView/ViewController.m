@@ -5,7 +5,7 @@
 
 //#define cellWidthSize 100
 #define gap 5
-
+#define TABLE_HEIGHT self.view.bounds.size.height
 
 @implementation ViewController
 
@@ -31,35 +31,45 @@
     float cellRWidthSize = 200;
     
     NSMutableArray *tempLArr = [NSMutableArray arrayWithObjects: sectiona, sectionb, sectionc, nil];
+//        NSMutableArray *tempLArr = [NSMutableArray arrayWithObjects: sectiona, nil];
     NSMutableArray *tempRArr = [NSMutableArray arrayWithObjects:section1, section2, section3, section4, section5, section6, section7, section8, nil];
+//        NSMutableArray *tempRArr = [NSMutableArray arrayWithObjects:section1,  section8, nil];
     
     
     if (lCView == nil) {
-        cellLWidthSize = cellLWidthSize *tempLArr.count;
-        lCView = [[ColumnCollectView alloc] initWithFrame:CGRectMake(0, 0, cellLWidthSize + gap, self.view.bounds.size.height*0.7)];
+//        cellLWidthSize = cellLWidthSize *tempLArr.count;
+        cellLWidthSize = [self calculateWidth:tempLArr];
+        lCView = [[ColumnCollectView alloc] initWithFrame:CGRectMake(0, 0, cellLWidthSize + gap, TABLE_HEIGHT)];
     }
     
     if (rCView == nil) {
-        cellRWidthSize = cellRWidthSize *tempRArr.count;
+//        cellRWidthSize = cellRWidthSize *tempRArr.count;
+        cellRWidthSize = [self calculateWidth:tempRArr];
         if ((cellLWidthSize +  cellRWidthSize* tempLArr.count + gap + gap) > self.view.bounds.size.width) {
-            rCView = [[ColumnCollectView alloc] initWithFrame:CGRectMake(cellLWidthSize + gap + gap, 0, self.view.bounds.size.width - cellLWidthSize - gap, self.view.bounds.size.height*0.7)];
+            rCView = [[ColumnCollectView alloc] initWithFrame:CGRectMake(cellLWidthSize + gap + gap, 0, self.view.bounds.size.width - cellLWidthSize - gap, TABLE_HEIGHT)];
         } else {
-            rCView = [[ColumnCollectView alloc] initWithFrame:CGRectMake(cellLWidthSize + gap + gap, 0, cellRWidthSize , self.view.bounds.size.height*0.7)];
+            rCView = [[ColumnCollectView alloc] initWithFrame:CGRectMake(cellLWidthSize + gap + gap, 0, cellRWidthSize , TABLE_HEIGHT)];
         }
     }
     
+    lCView.tag = 1;
+    rCView.tag = 2;
+    
+    //Set Scroll Enabled
     lCView.isScrollEnabled = NO;
     rCView.isScrollEnabled = YES;
     
+    //Set Drag Enabled
     lCView.isDragInteractionEnabled = NO;
     rCView.isDragInteractionEnabled = YES;
     
-    lCView.tableData = tempLArr;
-    rCView.tableData = tempRArr;
-    
+    //Set fileterBtn Enabled
     lCView.isFilterBtnEnabled = NO;
     rCView.isFilterBtnEnabled = YES;
-    
+
+    //Set Data
+    lCView.tableData = tempLArr;
+    rCView.tableData = tempRArr;
     
     [self.view addSubview:lCView];
     [self.view addSubview:rCView];
@@ -70,6 +80,20 @@
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
+
+- (float) calculateWidth:(NSArray *) arr {
+    float tWidth = 0;
+    for (NSArray *a in arr) {
+       tWidth += [self widthOfString:a[0]];
+    }
+    return tWidth;
+}
+
+- (CGFloat)widthOfString:(NSString *)string {
+    NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:[UIFont systemFontOfSize:15], NSFontAttributeName, nil];
+    return [[[NSAttributedString alloc] initWithString:string attributes:attributes] size].width + 65;
+}
+
 
 @end
 

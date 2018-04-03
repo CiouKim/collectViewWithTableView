@@ -112,7 +112,7 @@
         } else {
             return (NSComparisonResult)NSOrderedSame;
         }
-    }];
+    }];//orderby sort by value
 
     [[NSNotificationCenter defaultCenter] postNotificationName:@"refreshCollectView" object:self userInfo:[NSDictionary dictionaryWithObjectsAndKeys:sortCellCheckmarkArray, @"FilterData", _originalTableData, @"OriginalData", nil]];
 }

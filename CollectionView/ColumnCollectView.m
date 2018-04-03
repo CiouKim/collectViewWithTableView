@@ -11,6 +11,9 @@
 #define cellWidthSize 200
 #define filterViewSize 250
 #define minColumnCount 2
+#define bottomHeightSize 0
+#define fileBtnSize 50
+#define TABLE_HEIGHT 549
 
 @implementation ColumnCollectView
 
@@ -30,10 +33,11 @@ static NSString * const cellIdentifier = @"cellIdentifier";
 
 - (void)viewInit {
     if (_collectionView == nil) {
-        _collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(0, 75, self.frame.size.width, self.frame.size.height - 70) collectionViewLayout:self.flowLayout];
+        _collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height - bottomHeightSize) collectionViewLayout:self.flowLayout];
         _collectionView.backgroundColor = [UIColor clearColor];
         _collectionView.dataSource = self;
         _collectionView.delegate = self;
+        
         [self addSubview:_collectionView];
     }
     [self.collectionView registerClass:[CollectionViewCell class] forCellWithReuseIdentifier:cellIdentifier];
@@ -47,18 +51,28 @@ static NSString * const cellIdentifier = @"cellIdentifier";
     filterBtn.backgroundColor = [UIColor colorWithRed:202.0/255.0 green:205.0/255.0 blue:176.0/255.0 alpha:1.0];
     [filterBtn addTarget:self action:@selector(showfilterView) forControlEvents:UIControlEventTouchUpInside];
     [filterBtn setTitle:@"+" forState:UIControlStateNormal];
-    filterBtn.frame = CGRectMake(self.frame.size.width - 50, 25, 50, 50);
+    filterBtn.frame = CGRectMake(self.frame.size.width - fileBtnSize - 10, fileBtnSize, fileBtnSize, fileBtnSize);
     [self addSubview:filterBtn];
 
     filterView = [[FilterView alloc] initWithFrame:CGRectMake(self.frame.size.width/2 - filterViewSize/2, self.frame.size.height/2 -filterViewSize/2, filterViewSize, filterViewSize)];
     filterView.hidden = YES;
+    
+//    UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(gestureRecognizerMethod:)];
+//    [filterView addGestureRecognizer:panGestureRecognizer];
+    
     [self addSubview:filterView];
 }
+
+//- (void)gestureRecognizerMethod:(UIPanGestureRecognizer *)reg {
+//    if (reg.state == UIGestureRecognizerStateBegan || reg.state == UIGestureRecognizerStateChanged) {
+//        CGPoint touchLocation = [reg locationInView:self];
+//        filterView.center = touchLocation;
+//    }
+//}
 
 -(void)setIsFilterBtnEnabled:(BOOL)isFilterBtnEnabled {
     _isScrollEnabled = isFilterBtnEnabled;
     filterBtn.hidden = !isFilterBtnEnabled;
-    
 }
 
 - (void)setIsDragInteractionEnabled:(BOOL)isDragInteractionEnabled {
@@ -78,9 +92,8 @@ static NSString * const cellIdentifier = @"cellIdentifier";
 #pragma mark - Setters & Getters
 - (UICollectionViewFlowLayout *)flowLayout {
     if (!_flowLayout) {
-        // 初始化UICollectionViewFlowLayout，设置集合视图滑动方向。
         _flowLayout = [[UICollectionViewFlowLayout alloc] init];
-        _flowLayout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
+        _flowLayout.scrollDirection = UICollectionViewScrollDirectionHorizontal;//Horizontal direct
     }
     return _flowLayout;
 }
@@ -96,13 +109,13 @@ static NSString * const cellIdentifier = @"cellIdentifier";
 - (CollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(nonnull NSIndexPath *)indexPath {
     CollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:cellIdentifier forIndexPath:indexPath];
     cell.tbDataArray = self.tableShowData[indexPath.row];
-    cell.label.text = self.tableShowData[indexPath.row][0];
     return cell;
 }
 
 #pragma mark - UICollectionViewDelegateFlowLayout
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    return CGSizeMake(cellWidthSize, 450); //set item size
+    return CGSizeMake([self widthOfString:_tableShowData[indexPath.row][0]], TABLE_HEIGHT);
+//    return CGSizeMake(cellWidthSize, 450); //set item size
 }
 
 - (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section {
@@ -163,11 +176,15 @@ static NSString * const cellIdentifier = @"cellIdentifier";
             // 更新collectionView
             [collectionView deleteItemsAtIndexPaths:@[sourceIndexPath]];
             [collectionView insertItemsAtIndexPaths:@[destinationIndexPath]];
-            
+
             NSDictionary *userInfo = [NSDictionary dictionaryWithObject:[NSValue valueWithCGPoint:CGPointMake(0, 0)] forKey:@"CGPoint"];
             [[NSNotificationCenter defaultCenter] postNotificationName:@"TableScrollToTop" object:self userInfo:userInfo];//notifity TableScrollToTop
         } completion:nil];
     }
+}
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+//    NSDictionary *userInfo = [NSDictionary dictionaryWithObject:[NSValue valueWithCGPoint:CGPointMake(0, 0)] forKey:@"CGPoint"];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"TableScrollToTop" object:self userInfo:nil];//notifity TableScrollToTop
 }
 
 - (void)showfilterView {
@@ -187,13 +204,13 @@ static NSString * const cellIdentifier = @"cellIdentifier";
     if (originArray.count == self.tableData.count) {//判斷是否執行refresh 是否需要需要更新的collectView
         if (filterArray.count > minColumnCount) {
             if (self.frame.size.width < cellLWidthSize) {
-                filterBtn.frame = CGRectMake(self.frame.size.width - 50, 25, 50, 50);
+                filterBtn.frame = CGRectMake(self.frame.size.width - fileBtnSize - 10, fileBtnSize/2, fileBtnSize, fileBtnSize);
             } else {
-                filterBtn.frame = CGRectMake(cellLWidthSize -50, 25, 50, 50);
+                filterBtn.frame = CGRectMake(cellLWidthSize - fileBtnSize - 10, fileBtnSize/2, fileBtnSize, fileBtnSize);
             }
             filterView.frame = CGRectMake(self.frame.size.width/2 - filterViewSize/2, self.frame.size.height/2 -filterViewSize/2, filterViewSize, filterViewSize);
         } else {
-            filterBtn.frame = CGRectMake(cellWidthSize*minColumnCount - 50, 25, 50, 50);
+            filterBtn.frame = CGRectMake(cellWidthSize*minColumnCount - fileBtnSize -10, fileBtnSize/2, fileBtnSize, fileBtnSize);
             filterView.frame = CGRectMake(self.frame.size.width/2 - filterViewSize/2, self.frame.size.height/2 -filterViewSize/2, filterViewSize, filterViewSize);
         }
         
@@ -202,11 +219,17 @@ static NSString * const cellIdentifier = @"cellIdentifier";
             int filterIndex = [filterArray[filterArray.count - i] intValue];
             [_tableShowData addObject:_tableData[filterIndex]];
         }
+        
         [_collectionView reloadData];
         //scroll to point 0.0
         NSDictionary *userInfo = [NSDictionary dictionaryWithObject:[NSValue valueWithCGPoint:CGPointMake(0, 0)] forKey:@"CGPoint"];
         [[NSNotificationCenter defaultCenter] postNotificationName:@"TableScrollToTop" object:self userInfo:userInfo];//notifity TableScrollToTop
     }
+}
+
+- (CGFloat)widthOfString:(NSString *)string {
+    NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:[UIFont systemFontOfSize:15], NSFontAttributeName, nil];
+    return [[[NSAttributedString alloc] initWithString:string attributes:attributes] size].width + 65;
 }
 
 @end
