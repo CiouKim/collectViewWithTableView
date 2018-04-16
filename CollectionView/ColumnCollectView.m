@@ -7,6 +7,7 @@
 
 #import "ColumnCollectView.h"
 #import "CollectionViewCell.h"
+#import "ItemData.h"
 
 #define cellWidthSize 200
 #define filterViewSize 250
@@ -20,14 +21,20 @@
 static NSString * const cellIdentifier = @"cellIdentifier";
 
 - (instancetype)initWithFrame:(CGRect)frame {
-    
     self = [super initWithFrame:frame];
 
     if (self) {
         [self viewInit];
     }
+    
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 11.0f) {
+
+    } else {
+        [self setUpMovement];
+    }
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshCollectView:) name:@"refreshCollectView" object:nil];
+    
     return self;
 }
 
@@ -42,41 +49,32 @@ static NSString * const cellIdentifier = @"cellIdentifier";
     }
     [self.collectionView registerClass:[CollectionViewCell class] forCellWithReuseIdentifier:cellIdentifier];
     self.tableData = [[NSMutableArray alloc] init];
-    self.collectionView.dragDelegate = self;
-    self.collectionView.dropDelegate = self;//set drap drop delegate
-    
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 11.0f) {
+        self.collectionView.dragDelegate = self;
+        self.collectionView.dropDelegate = self;//set drap drop delegate
+    }
+
     filterBtn = [UIButton buttonWithType:UIButtonTypeCustom];
     filterBtn.layer.opacity = .70;
     filterBtn.layer.cornerRadius = 25.0;
     filterBtn.backgroundColor = [UIColor colorWithRed:202.0/255.0 green:205.0/255.0 blue:176.0/255.0 alpha:1.0];
     [filterBtn addTarget:self action:@selector(showfilterView) forControlEvents:UIControlEventTouchUpInside];
     [filterBtn setTitle:@"+" forState:UIControlStateNormal];
-    filterBtn.frame = CGRectMake(self.frame.size.width - fileBtnSize - 10, fileBtnSize, fileBtnSize, fileBtnSize);
+    filterBtn.frame = CGRectMake(self.frame.size.width - fileBtnSize - 10, fileBtnSize + 5, fileBtnSize, fileBtnSize);
     [self addSubview:filterBtn];
 
     filterView = [[FilterView alloc] initWithFrame:CGRectMake(self.frame.size.width/2 - filterViewSize/2, self.frame.size.height/2 -filterViewSize/2, filterViewSize, filterViewSize)];
     filterView.hidden = YES;
-    
-//    UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(gestureRecognizerMethod:)];
-//    [filterView addGestureRecognizer:panGestureRecognizer];
-    
     [self addSubview:filterView];
 }
 
-//- (void)gestureRecognizerMethod:(UIPanGestureRecognizer *)reg {
-//    if (reg.state == UIGestureRecognizerStateBegan || reg.state == UIGestureRecognizerStateChanged) {
-//        CGPoint touchLocation = [reg locationInView:self];
-//        filterView.center = touchLocation;
-//    }
-//}
-
--(void)setIsFilterBtnEnabled:(BOOL)isFilterBtnEnabled {
+- (void)setIsFilterBtnEnabled:(BOOL)isFilterBtnEnabled {
     _isScrollEnabled = isFilterBtnEnabled;
     filterBtn.hidden = !isFilterBtnEnabled;
 }
 
 - (void)setIsDragInteractionEnabled:(BOOL)isDragInteractionEnabled {
-    _collectionView.dragInteractionEnabled = isDragInteractionEnabled;
+    _isDragInteractionEnabled = isDragInteractionEnabled;
 }
 
 - (void)setIsScrollEnabled:(BOOL)isScrollEnabled {
@@ -114,8 +112,9 @@ static NSString * const cellIdentifier = @"cellIdentifier";
 
 #pragma mark - UICollectionViewDelegateFlowLayout
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    return CGSizeMake([self widthOfString:_tableShowData[indexPath.row][0]], TABLE_HEIGHT);
-//    return CGSizeMake(cellWidthSize, 450); //set item size
+    ItemData *data = _tableShowData[indexPath.row][0];
+    return CGSizeMake([self widthOfString:data.itemValue], TABLE_HEIGHT);//autosizeSetting
+//    return CGSizeMake(cellWidthSize, 550); //set item size
 }
 
 - (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section {
@@ -123,7 +122,7 @@ static NSString * const cellIdentifier = @"cellIdentifier";
 }
 
 - (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout minimumLineSpacingForSectionAtIndex:(NSInteger)section {
-    return 3;//set each collectView Cell gap
+    return 5;//set each collectView Cell gap
 }
 
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
@@ -133,7 +132,9 @@ static NSString * const cellIdentifier = @"cellIdentifier";
 #pragma mark - UICollectionViewDragDelegate
 - (NSArray <UIDragItem *>*)collectionView:(UICollectionView *)collectionView itemsForBeginningDragSession:(id<UIDragSession>)session atIndexPath:(NSIndexPath *)indexPath {
     NSArray *arryData = [self.tableShowData objectAtIndex:indexPath.row];
-    NSItemProvider *itemProvider = [[NSItemProvider alloc] initWithObject:arryData[0]];
+    
+    ItemData *data = arryData[0];
+    NSItemProvider *itemProvider = [[NSItemProvider alloc] initWithObject:data.itemValue];
     UIDragItem *dragItem = [[UIDragItem alloc] initWithItemProvider:itemProvider];
     dragItem.localObject = arryData;
     return @[dragItem];
@@ -176,25 +177,27 @@ static NSString * const cellIdentifier = @"cellIdentifier";
             // 更新collectionView
             [collectionView deleteItemsAtIndexPaths:@[sourceIndexPath]];
             [collectionView insertItemsAtIndexPaths:@[destinationIndexPath]];
-
+            
             NSDictionary *userInfo = [NSDictionary dictionaryWithObject:[NSValue valueWithCGPoint:CGPointMake(0, 0)] forKey:@"CGPoint"];
             [[NSNotificationCenter defaultCenter] postNotificationName:@"TableScrollToTop" object:self userInfo:userInfo];//notifity TableScrollToTop
         } completion:nil];
     }
 }
+
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-//    NSDictionary *userInfo = [NSDictionary dictionaryWithObject:[NSValue valueWithCGPoint:CGPointMake(0, 0)] forKey:@"CGPoint"];
     [[NSNotificationCenter defaultCenter] postNotificationName:@"TableScrollToTop" object:self userInfo:nil];//notifity TableScrollToTop
 }
 
 - (void)showfilterView {
     [UIView transitionWithView:filterView duration:.5 options:UIViewAnimationOptionTransitionCrossDissolve animations:^(void) {
         [filterView setHidden:!filterView.hidden];
-//        [filterView setHidden:NO];
+        if (filterView.hidden == NO) {
+            [filterView reFilterViewData:_tableShowData];
+        }
     } completion:nil];
 }
 
-- (void) refreshCollectView:(NSNotification *)notification {
+- (void)refreshCollectView:(NSNotification *)notification {
     float cellLWidthSize = cellWidthSize;
 
     NSArray *originArray = [notification.userInfo valueForKey:@"OriginalData"];
@@ -215,9 +218,8 @@ static NSString * const cellIdentifier = @"cellIdentifier";
         }
         
         [_tableShowData removeAllObjects];//tableShowData 需要顯示的資料
-        for (int i = 1 ; i<= filterArray.count; i++ ) {
-            int filterIndex = [filterArray[filterArray.count - i] intValue];
-            [_tableShowData addObject:_tableData[filterIndex]];
+        for (int i = 0 ; i< filterArray.count; i++ ) {
+            [_tableShowData addObject:filterArray[i]];
         }
         
         [_collectionView reloadData];
@@ -231,6 +233,45 @@ static NSString * const cellIdentifier = @"cellIdentifier";
     NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:[UIFont systemFontOfSize:15], NSFontAttributeName, nil];
     return [[[NSAttributedString alloc] initWithString:string attributes:attributes] size].width + 65;
 }
+
+- (void)collectionView:(UICollectionView *)collectionView moveItemAtIndexPath:(NSIndexPath *)sourceIndexPath toIndexPath:(NSIndexPath *)destinationIndexPath {
+    NSString *temp = [self.tableShowData objectAtIndex:sourceIndexPath.row];
+    [self.tableShowData removeObjectAtIndex:sourceIndexPath.row];
+    [self.tableShowData insertObject:temp atIndex:destinationIndexPath.row];
+}
+
+- (void)setUpMovement {
+    UILongPressGestureRecognizer *longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressAction:)];
+    [self.collectionView addGestureRecognizer:longPressGestureRecognizer];
+}
+
+- (void)longPressAction:(UIGestureRecognizer *)gesture {
+    if (_isDragInteractionEnabled == NO) {
+        return;
+    }
+    NSIndexPath *indexPath = [self.collectionView indexPathForItemAtPoint:[gesture locationInView:self.collectionView]];
+    switch (gesture.state) {
+        case UIGestureRecognizerStateBegan: {
+            [self.collectionView beginInteractiveMovementForItemAtIndexPath:indexPath];
+            break;
+        }
+        case UIGestureRecognizerStateChanged: {
+            [self.collectionView updateInteractiveMovementTargetPosition:[gesture locationInView:self.collectionView]];
+            break;
+        }
+        case UIGestureRecognizerStateEnded: {
+            [self.collectionView endInteractiveMovement];
+            [self.collectionView reloadData];
+            NSDictionary *userInfo = [NSDictionary dictionaryWithObject:[NSValue valueWithCGPoint:CGPointMake(0, 0)] forKey:@"CGPoint"];
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"TableScrollToTop" object:self userInfo:userInfo];
+            break;
+        }
+        default:
+            [self.collectionView cancelInteractiveMovement];
+            break;
+    }
+}
+
 
 @end
 
