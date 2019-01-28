@@ -27,4 +27,6 @@
 //isShowFilterBtn
 @property (nonatomic) BOOL isFilterBtnEnabled;
 
+@property (nonatomic) BOOL isFirst;
+
 @end

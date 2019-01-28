@@ -110,7 +110,6 @@
     
     [self.view addSubview:lCView];
     [self.view addSubview:rCView];
-    
 }
 
 - (void)didReceiveMemoryWarning {

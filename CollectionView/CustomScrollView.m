@@ -57,7 +57,7 @@
         }
         index ++;
     }
-    self.contentSize = CGSizeMake(self.frame.size.width, (data.count )*itemHeight +titleHeight);
+    self.contentSize = CGSizeMake(self.frame.size.width, (data.count )*itemHeight + titleHeight + 20);
 }
 
 - (void)onclickItem:(CLInterestItem*)sender {

@@ -22,34 +22,25 @@
         int gap = 30;
         int titleHeight = 100;
         
-        scrollView = [[CustomScrollView alloc] initWithFrame:CGRectMake(0 ,gap , self.frame.size.width, self.frame.size.height)];
+        scrollView = [[CustomScrollView alloc] initWithFrame:CGRectMake(0, gap, self.frame.size.width, self.frame.size.height)];
         scrollView.delegate = self;
         scrollView.showsHorizontalScrollIndicator = YES;
         scrollView.showsHorizontalScrollIndicator = NO;
         scrollView.showsVerticalScrollIndicator = NO;
         [self addSubview:scrollView];
         
-        titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0,  gap, self.frame.size.width, titleHeight)];
+        titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0 , gap, self.frame.size.width, titleHeight)];
         titleLabel.font = [UIFont systemFontOfSize:15.0];
         titleLabel.numberOfLines = 0;
         titleLabel.textAlignment = NSTextAlignmentCenter;
         titleLabel.backgroundColor = [UIColor colorWithRed:115.0/255 green:171.0/255 blue:255.0/255 alpha:1.0];
         [self addSubview:titleLabel];
 
-        _isFirstAdd = YES;
+        isFirst = YES;
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(tableScrollToTop:) name:@"TableScrollToTop" object:nil];
     }
     return self;
 }
-
-//-(void)drawRect:(CGRect)rect {
-//    int gap = 30;
-//    int titleHeight = 100;
-//
-//    ItemData *data = [scrollView.data objectAtIndex:0];
-//    scrollView.frame = CGRectMake(0 ,gap , [self widthOfString:data.itemValue], self.frame.size.height);
-//    titleLabel.frame = CGRectMake(0,  gap, [self widthOfString:data.itemValue], titleHeight);
-//}
 
 - (void)setTbDataArray:(NSMutableArray *)tbDataArray {
     _tbDataArray = tbDataArray;
@@ -59,6 +50,14 @@
     ItemData *data = [tbDataArray objectAtIndex:0];
     
     [titleLabel setText:data.itemValue];
+    
+    if (isFirst) {
+        NSDictionary *userInfo = [NSDictionary dictionaryWithObject:[NSValue valueWithCGPoint:CGPointMake(0, 50)] forKey:@"CGPoint"];
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"TableScrollToTop" object:self userInfo:userInfo];
+        userInfo = [NSDictionary dictionaryWithObject:[NSValue valueWithCGPoint:CGPointZero] forKey:@"CGPoint"];
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"TableScrollToTop" object:self userInfo:userInfo];
+        isFirst = NO;
+    }
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
@@ -76,7 +75,6 @@
         NSValue *v = [notification.userInfo valueForKey:@"CGPoint"];
         scrollView.contentOffset = CGPointMake(v.CGPointValue.x ,v.CGPointValue.y);
     }
-    [self layoutSubviews];
 }
 
 - (CGFloat)widthOfString:(NSString *)string {
@@ -88,8 +86,8 @@
     int gap = 30;
     int titleHeight = 100;
     ItemData *data = [_tbDataArray objectAtIndex:0];
-    scrollView.frame = CGRectMake(0 ,gap , [self widthOfString:data.itemValue], self.frame.size.height);
-    titleLabel.frame = CGRectMake(0,  gap, [self widthOfString:data.itemValue], titleHeight);
+    scrollView.frame = CGRectMake(0, gap, [self widthOfString:data.itemValue], self.frame.size.height);
+    titleLabel.frame = CGRectMake(0, gap, [self widthOfString:data.itemValue], titleHeight);
 }
 
 @end

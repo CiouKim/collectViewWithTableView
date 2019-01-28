@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 #import "CustomScrollView.h"
+#import "ColumnCollectView.h"
 
 @class ViewController;
 
@@ -18,10 +19,10 @@
 @interface CollectionViewCell : UICollectionViewCell <UIScrollViewDelegate/*UITableViewDelegate, UITableViewDataSource, CollectionViewCellDelegate*/> {
     UILabel *titleLabel;
     CustomScrollView *scrollView;
+    BOOL isFirst;
 }
 //ＣollectViewCell 的所有資料
 @property (nonatomic, weak) NSMutableArray *tbDataArray;
 @property (nonatomic, weak) NSMutableArray *itemDataArray;
-@property (nonatomic) BOOL isFirstAdd;
 
 @end

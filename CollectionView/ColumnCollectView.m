@@ -27,12 +27,11 @@ static NSString * const cellIdentifier = @"cellIdentifier";
         [self viewInit];
     }
     
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 11.0f) {
-
-    } else {
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] < 11.0f) {
         [self setUpMovement];
     }
 
+    _isFirst = YES;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshCollectView:) name:@"refreshCollectView" object:nil];
     
     return self;
@@ -53,7 +52,7 @@ static NSString * const cellIdentifier = @"cellIdentifier";
         self.collectionView.dragDelegate = self;
         self.collectionView.dropDelegate = self;//set drap drop delegate
     }
-
+    
     filterBtn = [UIButton buttonWithType:UIButtonTypeCustom];
     filterBtn.layer.opacity = .70;
     filterBtn.layer.cornerRadius = 25.0;
@@ -85,6 +84,12 @@ static NSString * const cellIdentifier = @"cellIdentifier";
     filterView.originalTableData = tableData;
     _tableData = tableData;
     [_collectionView reloadData];
+    
+    if (_isFirst) {
+        _collectionView.contentOffset = CGPointMake(_collectionView.contentSize.width, 0);
+        _collectionView.contentOffset = CGPointZero;
+        _isFirst = NO;
+    }
 }
 
 #pragma mark - Setters & Getters
@@ -184,9 +189,9 @@ static NSString * const cellIdentifier = @"cellIdentifier";
     }
 }
 
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"TableScrollToTop" object:self userInfo:nil];//notifity TableScrollToTop
-}
+//- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+////    [[NSNotificationCenter defaultCenter] postNotificationName:@"TableScrollToTop" object:self userInfo:nil];//notifity TableScrollToTop
+//}
 
 - (void)showfilterView {
     [UIView transitionWithView:filterView duration:.5 options:UIViewAnimationOptionTransitionCrossDissolve animations:^(void) {
@@ -218,7 +223,7 @@ static NSString * const cellIdentifier = @"cellIdentifier";
         }
         
         [_tableShowData removeAllObjects];//tableShowData 需要顯示的資料
-        for (int i = 0 ; i< filterArray.count; i++ ) {
+        for (int i = 0 ; i < filterArray.count; i++ ) {
             [_tableShowData addObject:filterArray[i]];
         }
         
@@ -262,7 +267,7 @@ static NSString * const cellIdentifier = @"cellIdentifier";
         case UIGestureRecognizerStateEnded: {
             [self.collectionView endInteractiveMovement];
             [self.collectionView reloadData];
-            NSDictionary *userInfo = [NSDictionary dictionaryWithObject:[NSValue valueWithCGPoint:CGPointMake(0, 0)] forKey:@"CGPoint"];
+            NSDictionary *userInfo = [NSDictionary dictionaryWithObject:[NSValue valueWithCGPoint:CGPointMake(0, 0)] forKey:@"CGPoint"];//when drop finsih scroll to top
             [[NSNotificationCenter defaultCenter] postNotificationName:@"TableScrollToTop" object:self userInfo:userInfo];
             break;
         }
@@ -271,7 +276,6 @@ static NSString * const cellIdentifier = @"cellIdentifier";
             break;
     }
 }
-
 
 @end
 
